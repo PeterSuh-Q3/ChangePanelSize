@@ -28,9 +28,9 @@ jobs:
               run: |
                 ls -l ./dist
                 rm ./dist/*_debug.spk
-                for f in ./dist/*.spk; do
-                  mv "$f" "${f%.spk}.spk"
-                done
+                #for f in ./dist/*.spk; do
+                #  mv "$f" "${f%.spk}.spk"
+                #done
                 ls -l ./dist
             - name: Upload Package
               uses: actions/upload-artifact@v4
