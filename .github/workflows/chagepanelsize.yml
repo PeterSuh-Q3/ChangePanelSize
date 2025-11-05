@@ -13,7 +13,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                dsm: ['7.0','7.1','7.2']
+                dsm: ['7.2']
                 arch: ['kvmx64']
         steps:
             - name: Checkout
@@ -29,13 +29,13 @@ jobs:
                 ls -l ./dist
                 rm ./dist/*_debug.spk
                 for f in ./dist/*.spk; do
-                  mv "$f" "${f%.spk}-${{ matrix.dsm }}.spk"
+                  mv "$f" "${f%.spk}.spk"
                 done
                 ls -l ./dist
             - name: Upload Package
               uses: actions/upload-artifact@v4
               with:
-                  name: packages-${{ matrix.dsm }}
+                  name: packages
                   path: ./dist/*.spk
             - name: Release
               uses: softprops/action-gh-release@v2
