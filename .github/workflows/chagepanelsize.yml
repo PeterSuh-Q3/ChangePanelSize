@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dsm: ['7.2']
+        dsm: ['7.3']
         arch: ['kvmx64']
 
     steps:
