@@ -68,6 +68,13 @@ echo "Access-Control-Allow-Methods: GET, POST"
 echo "Access-Control-Allow-Headers: Content-Type"
 echo ""    # 헤더와 바디 구분용 공백 라인
 
+# ---------- 3-1. sudoers 조기 체크 (액션 진입 전 차단) ----------------------
+if [ ! -f "/etc/sudoers.d/Changepanelsize" ]; then
+    log "[ERROR] sudoers file not found: /etc/sudoers.d/Changepanelsize"
+    echo "{\"success\": false, \"message\": \"Permission setup required\", \"sudoers_missing\": true}"
+    exit 0
+fi
+
 # ---------- 4. URL-encoded 파라미터 파싱 ------------------------------------
 # 안전한 urldecode 함수
 urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
@@ -166,9 +173,8 @@ validate_hdd_bay() {
 
 case "${ACTION}" in
     info)
-        SUDOERS_MISSING=$(check_sudoers)
         DATA="\"unique\":\"${_UNIQUE}\",\"build\":\"${_BUILD}\""
-        json_response true "System information retrieved" "${DATA}" "${SUDOERS_MISSING}"
+        json_response true "System information retrieved" "${DATA}"
         ;;
 
     apply)
@@ -245,11 +251,10 @@ case "${ACTION}" in
         else
             log "Apply command failed with exit code: ${EXIT_CODE}"
             ERR="$(tail -n 1 "${TEMP_LOG}" 2>/dev/null || echo 'Unknown error')"
-            SUDOERS_MISSING=$(check_sudoers)
             if [ ${EXIT_CODE} -eq 124 ]; then
-                json_response false "Apply failed: Operation timed out after 30 seconds" "" "${SUDOERS_MISSING}"
+                json_response false "Apply failed: Operation timed out after 30 seconds"
             else
-                json_response false "Apply failed: ${ERR}" "" "${SUDOERS_MISSING}"
+                json_response false "Apply failed: ${ERR}"
             fi
         fi
         
@@ -295,11 +300,10 @@ case "${ACTION}" in
         else
             log "Restore command failed with exit code: ${EXIT_CODE}"
             ERR="$(tail -n 1 "${TEMP_LOG}" 2>/dev/null || echo 'Unknown error')"
-            SUDOERS_MISSING=$(check_sudoers)
             if [ ${EXIT_CODE} -eq 124 ]; then
-                json_response false "Restore failed: Operation timed out after 30 seconds" "" "${SUDOERS_MISSING}"
+                json_response false "Restore failed: Operation timed out after 30 seconds"
             else
-                json_response false "Restore failed: ${ERR}" "" "${SUDOERS_MISSING}"
+                json_response false "Restore failed: ${ERR}"
             fi
         fi
         
