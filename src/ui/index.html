@@ -247,8 +247,10 @@
 
                     if (data.sudoers_missing === true) {
                         document.getElementById('system-status').textContent = '⚠️ Permission Required';
-                        document.getElementById('status-message').innerHTML = showSudoersGuide();
-                        document.getElementById('status-message').style.display = 'block';
+                        const statusEl = document.getElementById('status-message');
+                        statusEl.className = 'status-message';
+                        statusEl.innerHTML = showSudoersGuide();
+                        statusEl.style.display = 'block';
                         // 버튼 비활성화
                         document.querySelectorAll('.btn-primary, .btn-secondary').forEach(btn => btn.disabled = true);
                     } else {
@@ -316,8 +318,10 @@
                     showStatus(`✅ Configuration applied successfully! HDD: ${hddBay}, SSD: ${ssdBay}`, false);
                     document.getElementById('system-status').textContent = 'Modified';
                 } else if (data.sudoers_missing === true) {
-                    document.getElementById('status-message').innerHTML = showSudoersGuide();
-                    document.getElementById('status-message').style.display = 'block';
+                    const statusEl = document.getElementById('status-message');
+                    statusEl.className = 'status-message';
+                    statusEl.innerHTML = showSudoersGuide();
+                    statusEl.style.display = 'block';
                     document.getElementById('system-status').textContent = '⚠️ Permission Required';
                     document.querySelectorAll('.btn-primary, .btn-secondary').forEach(btn => btn.disabled = true);
                 } else {
@@ -357,8 +361,10 @@
                     document.getElementById('hdd_bay').value = '';
                     document.getElementById('ssd_bay').value = '';
                 } else if (data.sudoers_missing === true) {
-                    document.getElementById('status-message').innerHTML = showSudoersGuide();
-                    document.getElementById('status-message').style.display = 'block';
+                    const statusEl = document.getElementById('status-message');
+                    statusEl.className = 'status-message';
+                    statusEl.innerHTML = showSudoersGuide();
+                    statusEl.style.display = 'block';
                     document.getElementById('system-status').textContent = '⚠️ Permission Required';
                     document.querySelectorAll('.btn-primary, .btn-secondary').forEach(btn => btn.disabled = true);
                 } else {
