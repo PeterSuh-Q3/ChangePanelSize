@@ -1,63 +1,72 @@
-name: Build n Release Change Panel Size Packages 
-
+name: Build n Release Change Panel Size Packages
 on:
   release:
     types: [published]
-
   workflow_dispatch:
-    
+
 jobs:
-    build-spk:
-        name: Build Package
-        runs-on: ubuntu-latest
-        strategy:
-            fail-fast: false
-            matrix:
-                dsm: ['7.2']
-                arch: ['kvmx64']
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-              
-            - name: Synology Package Builder Github Action
-              uses: tomgrv/synology-package-builder@v1.3.0
-              with:
-                  dsm: ${{ matrix.dsm }}
-                  arch: ${{ matrix.arch }}
-                  output: ./dist
-                  
-            - name: Add dsmappname to INFO
-              run: |
-                for f in ./dist/*.spk; do
-                  [[ "$f" == *_debug.spk ]] && continue
-                  tmpdir=$(mktemp -d)
-                  tar -xf "$f" -C "$tmpdir"
-                  APPID=$(jq -r '.[] | keys[]' src/ui/config)
-                  if ! grep -q "dsmappname" "$tmpdir/INFO"; then
-                    sed -i "s/dsmuidir=\"ui\"/dsmuidir=\"ui\"\ndsmappname=\"$APPID\"/" "$tmpdir/INFO"
-                  fi
-                  tar -cf "$f" -C "$tmpdir" $(ls "$tmpdir")
-                  rm -rf "$tmpdir"
-                done        
-                
-            - name: Remove debug spk and rename package
-              run: |
-                ls -l ./dist
-                rm ./dist/*_debug.spk
-                #for f in ./dist/*.spk; do
-                #  mv "$f" "${f%.spk}.spk"
-                #done
-                ls -l ./dist
-                
-            - name: Upload Package
-              uses: actions/upload-artifact@v4
-              with:
-                  name: packages
-                  path: ./dist/*.spk
-                  
-            - name: Release
-              uses: softprops/action-gh-release@v2
-              with:
-                tag_name: ${{ inputs.version }}
-                files: |
-                  ./dist/*.spk
+  build-spk:
+    name: Build Package
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dsm: ['7.2']
+        arch: ['kvmx64']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── src/** 해시 기반 빌드 결과물 캐시 ────────────────────────
+      - name: Cache dist packages
+        id: cache_dist
+        uses: actions/cache@v4
+        with:
+          path: ./dist
+          key: dist-${{ matrix.arch }}-${{ matrix.dsm }}-${{ hashFiles('src/**') }}
+          restore-keys: |
+            dist-${{ matrix.arch }}-${{ matrix.dsm }}-
+
+      - name: Synology Package Builder Github Action
+        if: steps.cache_dist.outputs.cache-hit != 'true'
+        uses: tomgrv/synology-package-builder@v1.3.0
+        with:
+          dsm: ${{ matrix.dsm }}
+          arch: ${{ matrix.arch }}
+          output: ./dist
+
+      - name: Add dsmappname to INFO
+        if: steps.cache_dist.outputs.cache-hit != 'true'
+        run: |
+          for f in ./dist/*.spk; do
+            [[ "$f" == *_debug.spk ]] && continue
+            tmpdir=$(mktemp -d)
+            tar -xf "$f" -C "$tmpdir"
+            APPID=$(jq -r '.[] | keys[]' src/ui/config)
+            if ! grep -q "dsmappname" "$tmpdir/INFO"; then
+              sed -i "s/dsmuidir=\"ui\"/dsmuidir=\"ui\"\ndsmappname=\"$APPID\"/" "$tmpdir/INFO"
+            fi
+            tar -cf "$f" -C "$tmpdir" $(ls "$tmpdir")
+            rm -rf "$tmpdir"
+          done
+
+      - name: Remove debug spk and rename package
+        if: steps.cache_dist.outputs.cache-hit != 'true'
+        run: |
+          ls -l ./dist
+          rm ./dist/*_debug.spk
+          ls -l ./dist
+
+      - name: Upload Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: ./dist/*.spk
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.version }}
+          files: |
+            ./dist/*.spk
