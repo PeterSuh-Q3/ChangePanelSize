@@ -157,24 +157,11 @@ validate_hdd_bay() {
 
 case "${ACTION}" in
     info)
-        # sudoers 체크 (액션 안에서 실행 = root 권한 컨텍스트)
-        SUDOERS_MISSING="false"
-        if [ ! -f "/etc/sudoers.d/Changepanelsize" ]; then
-            log "[ERROR] sudoers file not found: /etc/sudoers.d/Changepanelsize"
-            SUDOERS_MISSING="true"
-        fi
         DATA="\"unique\":\"${_UNIQUE}\",\"build\":\"${_BUILD}\""
-        json_response true "System information retrieved" "${DATA}" "${SUDOERS_MISSING}"
+        json_response true "System information retrieved" "${DATA}"
         ;;
 
     apply)
-        # sudoers 체크 (액션 안에서 실행 = root 권한 컨텍스트)
-        if [ ! -f "/etc/sudoers.d/Changepanelsize" ]; then
-            log "[ERROR] sudoers file not found: /etc/sudoers.d/Changepanelsize"
-            json_response false "Permission setup required" "" "true"
-            exit 0
-        fi
-
         # 파라미터 존재 여부 확인
         # HDD_BAY 값 검증
         validate_hdd_bay "${HDD_BAY}"
@@ -248,7 +235,9 @@ case "${ACTION}" in
         else
             log "Apply command failed with exit code: ${EXIT_CODE}"
             ERR="$(tail -n 1 "${TEMP_LOG}" 2>/dev/null || echo 'Unknown error')"
-            if [ ${EXIT_CODE} -eq 124 ]; then
+            if [ ${EXIT_CODE} -eq 126 ]; then
+                json_response false "Permission setup required" "" "true"
+            elif [ ${EXIT_CODE} -eq 124 ]; then
                 json_response false "Apply failed: Operation timed out after 30 seconds"
             else
                 json_response false "Apply failed: ${ERR}"
@@ -260,13 +249,6 @@ case "${ACTION}" in
         ;;
 
     restore)
-        # sudoers 체크 (액션 안에서 실행 = root 권한 컨텍스트)
-        if [ ! -f "/etc/sudoers.d/Changepanelsize" ]; then
-            log "[ERROR] sudoers file not found: /etc/sudoers.d/Changepanelsize"
-            json_response false "Permission setup required" "" "true"
-            exit 0
-        fi
-
         log "Executing restore operation"
         
         # change_panel_size.sh를 통해 실행 (백그라운드 실행 후 결과 확인)
@@ -304,7 +286,9 @@ case "${ACTION}" in
         else
             log "Restore command failed with exit code: ${EXIT_CODE}"
             ERR="$(tail -n 1 "${TEMP_LOG}" 2>/dev/null || echo 'Unknown error')"
-            if [ ${EXIT_CODE} -eq 124 ]; then
+            if [ ${EXIT_CODE} -eq 126 ]; then
+                json_response false "Permission setup required" "" "true"
+            elif [ ${EXIT_CODE} -eq 124 ]; then
                 json_response false "Restore failed: Operation timed out after 30 seconds"
             else
                 json_response false "Restore failed: ${ERR}"
