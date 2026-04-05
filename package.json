@@ -1,11 +1,12 @@
 {
   "package": "Change-Panel-Size",
   "name": "Changepanelsize",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Syno Storage Panel Size Configuration Tool",
   "target": "./src",
   "install_type": "package",
   "dsmuidir": "ui",
+  "dsmappname": "SYNO.SDS.Changepanelsize",
   "install_dep_packages": "",
   "ctl_stop": "yes",
   "ctl_uninstall": "yes",
