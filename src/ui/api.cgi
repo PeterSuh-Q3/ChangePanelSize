@@ -126,15 +126,6 @@ json_response() {
     }
 }
 
-# ---------- 5-1. sudoers 파일 존재 여부 체크 ---------------------------------
-check_sudoers() {
-    if [ ! -f "/etc/sudoers.d/Changepanelsize" ]; then
-        echo "true"
-    else
-        echo "false"
-    fi
-}
-
 # ---------- 6. 액션 라우팅 ---------------------------------------------------
 _UNIQUE="$(/bin/get_key_value /etc.defaults/synoinfo.conf unique 2>/dev/null)"
 _BUILD="$(/bin/get_key_value /etc.defaults/VERSION buildnumber 2>/dev/null)"
