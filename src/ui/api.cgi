@@ -245,10 +245,11 @@ case "${ACTION}" in
         else
             log "Apply command failed with exit code: ${EXIT_CODE}"
             ERR="$(tail -n 1 "${TEMP_LOG}" 2>/dev/null || echo 'Unknown error')"
+            SUDOERS_MISSING=$(check_sudoers)
             if [ ${EXIT_CODE} -eq 124 ]; then
-                json_response false "Apply failed: Operation timed out after 30 seconds"
+                json_response false "Apply failed: Operation timed out after 30 seconds" "" "${SUDOERS_MISSING}"
             else
-                json_response false "Apply failed: ${ERR}"
+                json_response false "Apply failed: ${ERR}" "" "${SUDOERS_MISSING}"
             fi
         fi
         
@@ -294,10 +295,11 @@ case "${ACTION}" in
         else
             log "Restore command failed with exit code: ${EXIT_CODE}"
             ERR="$(tail -n 1 "${TEMP_LOG}" 2>/dev/null || echo 'Unknown error')"
+            SUDOERS_MISSING=$(check_sudoers)
             if [ ${EXIT_CODE} -eq 124 ]; then
-                json_response false "Restore failed: Operation timed out after 30 seconds"
+                json_response false "Restore failed: Operation timed out after 30 seconds" "" "${SUDOERS_MISSING}"
             else
-                json_response false "Restore failed: ${ERR}"
+                json_response false "Restore failed: ${ERR}" "" "${SUDOERS_MISSING}"
             fi
         fi
         
