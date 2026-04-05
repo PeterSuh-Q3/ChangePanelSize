@@ -61,6 +61,17 @@ execute_storage_command() {
         chmod +x "${STORAGE_SCRIPT}"
     fi
 
+    # sudoers 파일 존재 여부 체크 (sudo -l 로 권한 확인)
+    # exit code 126: sudoers 미설정 의미
+    if ! sudo -l "${STORAGE_SCRIPT}" > /dev/null 2>&1; then
+        log_message "ERROR: sudoers not configured for ${STORAGE_SCRIPT}"
+        log_message "Please run the following commands via SSH:"
+        log_message "  sudo -i"
+        log_message "  echo 'changepanelsize ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/Changepanelsize"
+        log_message "  chmod 0440 /etc/sudoers.d/Changepanelsize"
+        return 126
+    fi
+
     # sudo 명령 실행 (로그 파일에 출력 및 에러 리다이렉션)
     if sudo "${STORAGE_SCRIPT}" ${args} >> "${LOG_FILE}" 2>&1; then
         log_message "Storage command executed successfully"
