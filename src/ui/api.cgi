@@ -113,16 +113,26 @@ log "Request: ACTION=${ACTION}, HDD_BAY=${HDD_BAY}, SSD_BAY=${SSD_BAY}"
 
 # ---------- 5. JSON 응답 함수 -----------------------------------------------
 json_response() {
-    local success="$1" message="$2" data="$3"
+    local success="$1" message="$2" data="$3" sudoers_missing="${4:-false}"
     {
         echo "{"
         echo "  \"success\": ${success},"
-        echo "  \"message\": \"${message//\"/\\\"}\""
+        echo "  \"message\": \"${message//\"/\\\"}\","
+        echo "  \"sudoers_missing\": ${sudoers_missing}"
         if [ -n "${data}" ]; then
             echo "  ,${data}"
         fi
         echo "}"
     }
+}
+
+# ---------- 5-1. sudoers 파일 존재 여부 체크 ---------------------------------
+check_sudoers() {
+    if [ ! -f "/etc/sudoers.d/Changepanelsize" ]; then
+        echo "true"
+    else
+        echo "false"
+    fi
 }
 
 # ---------- 6. 액션 라우팅 ---------------------------------------------------
@@ -156,8 +166,9 @@ validate_hdd_bay() {
 
 case "${ACTION}" in
     info)
+        SUDOERS_MISSING=$(check_sudoers)
         DATA="\"unique\":\"${_UNIQUE}\",\"build\":\"${_BUILD}\""
-        json_response true "System information retrieved" "${DATA}"
+        json_response true "System information retrieved" "${DATA}" "${SUDOERS_MISSING}"
         ;;
 
     apply)

@@ -215,13 +215,45 @@
             loadSystemInfo();
         });
 
+        function showSudoersGuide() {
+            return `
+                <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:16px;margin:16px 0;font-family:monospace;">
+                    <strong style="color:#856404;font-size:15px;">⚠️ 권한 설정이 필요합니다 / Permission Setup Required</strong><br><br>
+                    <span style="color:#333;">
+                        /etc/sudoers.d/Changepanelsize 파일이 존재하지 않습니다.<br>
+                        <em style="color:#666;">The /etc/sudoers.d/Changepanelsize file does not exist.</em><br><br>
+                        앱을 사용하기 전에 SSH로 접속하여 아래 명령어를 순서대로 실행해주세요.<br>
+                        <em style="color:#666;">Before using this app, please connect via SSH and run the following commands in order.</em>
+                    </span><br><br>
+                    <div style="background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:4px;line-height:2.0;font-size:13px;">
+                        <span style="color:#569cd6;">sudo -i</span><br>
+                        <span style="color:#569cd6;">echo</span> <span style="color:#ce9178;">"changepanelsize ALL=(ALL) NOPASSWD: ALL"</span> <span style="color:#d4d4d4;">&gt; /etc/sudoers.d/Changepanelsize</span><br>
+                        <span style="color:#569cd6;">chmod</span> <span style="color:#b5cea8;">0440</span> /etc/sudoers.d/Changepanelsize
+                    </div>
+                    <br>
+                    <span style="color:#856404;">
+                        설정 완료 후 페이지를 새로고침 해주세요.<br>
+                        <em>After setup is complete, please refresh the page.</em>
+                    </span>
+                </div>`;
+        }
+
         function loadSystemInfo() {
             fetch('/webman/3rdparty/Changepanelsize/api.cgi?action=info')
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('unique-id').textContent = data.unique || 'Unknown';
                     document.getElementById('build-number').textContent = data.build || 'Unknown';
-                    document.getElementById('system-status').textContent = 'Ready';
+
+                    if (data.sudoers_missing === true) {
+                        document.getElementById('system-status').textContent = '⚠️ Permission Required';
+                        document.getElementById('status-message').innerHTML = showSudoersGuide();
+                        document.getElementById('status-message').style.display = 'block';
+                        // 버튼 비활성화
+                        document.querySelectorAll('.btn-primary, .btn-secondary').forEach(btn => btn.disabled = true);
+                    } else {
+                        document.getElementById('system-status').textContent = 'Ready';
+                    }
                 })
                 .catch(error => {
                     document.getElementById('unique-id').textContent = 'Error loading';
