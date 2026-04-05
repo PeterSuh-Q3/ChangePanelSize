@@ -68,13 +68,6 @@ echo "Access-Control-Allow-Methods: GET, POST"
 echo "Access-Control-Allow-Headers: Content-Type"
 echo ""    # 헤더와 바디 구분용 공백 라인
 
-# ---------- 3-1. sudoers 조기 체크 (액션 진입 전 차단) ----------------------
-if [ ! -f "/etc/sudoers.d/Changepanelsize" ]; then
-    log "[ERROR] sudoers file not found: /etc/sudoers.d/Changepanelsize"
-    echo "{\"success\": false, \"message\": \"Permission setup required\", \"sudoers_missing\": true}"
-    exit 0
-fi
-
 # ---------- 4. URL-encoded 파라미터 파싱 ------------------------------------
 # 안전한 urldecode 함수
 urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
@@ -173,11 +166,24 @@ validate_hdd_bay() {
 
 case "${ACTION}" in
     info)
+        # sudoers 체크 (액션 안에서 실행 = root 권한 컨텍스트)
+        SUDOERS_MISSING="false"
+        if [ ! -f "/etc/sudoers.d/Changepanelsize" ]; then
+            log "[ERROR] sudoers file not found: /etc/sudoers.d/Changepanelsize"
+            SUDOERS_MISSING="true"
+        fi
         DATA="\"unique\":\"${_UNIQUE}\",\"build\":\"${_BUILD}\""
-        json_response true "System information retrieved" "${DATA}"
+        json_response true "System information retrieved" "${DATA}" "${SUDOERS_MISSING}"
         ;;
 
     apply)
+        # sudoers 체크 (액션 안에서 실행 = root 권한 컨텍스트)
+        if [ ! -f "/etc/sudoers.d/Changepanelsize" ]; then
+            log "[ERROR] sudoers file not found: /etc/sudoers.d/Changepanelsize"
+            json_response false "Permission setup required" "" "true"
+            exit 0
+        fi
+
         # 파라미터 존재 여부 확인
         # HDD_BAY 값 검증
         validate_hdd_bay "${HDD_BAY}"
@@ -263,6 +269,13 @@ case "${ACTION}" in
         ;;
 
     restore)
+        # sudoers 체크 (액션 안에서 실행 = root 권한 컨텍스트)
+        if [ ! -f "/etc/sudoers.d/Changepanelsize" ]; then
+            log "[ERROR] sudoers file not found: /etc/sudoers.d/Changepanelsize"
+            json_response false "Permission setup required" "" "true"
+            exit 0
+        fi
+
         log "Executing restore operation"
         
         # change_panel_size.sh를 통해 실행 (백그라운드 실행 후 결과 확인)
