@@ -20,7 +20,7 @@ ll /etc/sudoers.d/Changepanelsize
 
 ```
 sudo -i
-echo "changepanelsize ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/Changepanelsize
+echo "changepanelsize ALL=NOPASSWD: /var/packages/Changepanelsize/target/bin/storagepanel.sh" > /etc/sudoers.d/Changepanelsize
 chmod 0440 /etc/sudoers.d/Changepanelsize
 ```
 
