@@ -1,27 +1,69 @@
-name: Build n Release Change Panel Size Packages
+name: Build and Release Change Panel Size
+
 on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Publish a GitHub release after a successful build
+        required: true
+        default: 'false'
+        type: boolean
+      tag_name:
+        description: Release tag (defaults to v + package.json version)
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: tag
+        run: |
+          if [ "${{ github.event_name }}" = release ]; then
+            tag='${{ github.event.release.tag_name }}'
+          elif [ -n '${{ inputs.tag_name }}' ]; then
+            tag='${{ inputs.tag_name }}'
+          else
+            tag="v$(jq -r .version package.json)"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
   build-spk:
+    needs: prepare
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Build SPK without Synology toolchain
         run: ./build-spk.sh ./dist
-      - name: Verify package metadata and privilege tool
+      - name: Verify packaged metadata, popup registration, and privilege tool
         run: |
-          set -eux
-          spk=$(ls ./dist/*.spk); d=$(mktemp -d); tar -xf "$spk" -C "$d"
-          test "$(grep '^checksum=' "$d/INFO" | cut -d'"' -f2)" = "$(md5sum "$d/package.tgz" | awk '{print $1}')"
-          grep -q '^dsmappname=' "$d/INFO"
-          tar -tzf "$d/package.tgz" | grep -q 'bin/helper/changepanelsize-helper'
-          grep -q '"tool"' "$d/conf/privilege"
+          set -euo pipefail
+          spk=$(find ./dist -name '*.spk' -print -quit)
+          test -n "$spk"
+          workdir=$(mktemp -d); tar -xf "$spk" -C "$workdir"
+          test "$(grep '^checksum=' "$workdir/INFO" | cut -d'"' -f2)" = "$(md5sum "$workdir/package.tgz" | awk '{print $1}')"
+          grep -q '^dsmappname="PeterSuh.ChangePanelSize.AppInstance"$' "$workdir/INFO"
+          tar -tzf "$workdir/package.tgz" | grep -q 'ui/dsm-wrapper.js'
+          tar -tzf "$workdir/package.tgz" | grep -q 'bin/helper/changepanelsize-helper.x86_64'
+          grep -q '"tool"' "$workdir/conf/privilege"
+          ! grep -q '"run-as"[[:space:]]*:[[:space:]]*"root"' "$workdir/conf/privilege"
+          file "$workdir/package.tgz"
       - uses: actions/upload-artifact@v4
         with:
-          name: packages
+          name: ChangePanelSize-x86_64
           path: ./dist/*.spk
-      - uses: softprops/action-gh-release@v2
+      - name: Publish release asset
+        if: github.event_name == 'release' || inputs.publish_release
+        uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          generate_release_notes: true
           files: ./dist/*.spk

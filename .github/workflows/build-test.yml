@@ -1,0 +1,32 @@
+name: Build and Test
+
+on:
+  pull_request:
+    paths:
+      - 'build-spk.sh'
+      - 'package.json'
+      - 'src/**'
+      - 'synology/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+jobs:
+  test-helper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile production helper statically
+        run: gcc -O2 -static -Wall -Wextra -o /tmp/changepanelsize-helper.x86_64 synology/helper/changepanelsize-helper.c
+      - name: Verify helper rejects invalid arguments
+        run: |
+          gcc -O2 -Wall -Wextra -DTARGET='"/usr/bin/id"' -o /tmp/helper-test synology/helper/changepanelsize-helper.c
+          sudo chown root:root /tmp/helper-test && sudo chmod 6755 /tmp/helper-test
+          if sudo -u nobody /tmp/helper-test '--evil'; then exit 1; fi
+          sudo -u nobody /tmp/helper-test -u | grep -qx 0
+  build-spk:
+    needs: test-helper
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./build-spk.sh ./dist
+      - run: tar -tf $(find ./dist -name '*.spk' -print -quit) | grep -q '^INFO$'
