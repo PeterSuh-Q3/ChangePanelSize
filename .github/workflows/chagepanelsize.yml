@@ -55,7 +55,6 @@ jobs:
           tar -tzf "$workdir/package.tgz" | grep -q 'bin/helper/changepanelsize-helper.x86_64'
           grep -q '"tool"' "$workdir/conf/privilege"
           ! grep -q '"run-as"[[:space:]]*:[[:space:]]*"root"' "$workdir/conf/privilege"
-          file "$workdir/package.tgz"
       - uses: actions/upload-artifact@v4
         with:
           name: ChangePanelSize-x86_64
