@@ -7,7 +7,7 @@
 
 The package uses a narrowly scoped DSM privilege tool for storage-panel changes; no sudoers configuration is required.
 
-<img width="1137" height="1019" alt="스크린샷 2026-08-09 오전 11 42 30" src="https://github.com/user-attachments/assets/a547f450-622e-4253-b4a2-dfaa58abaf7e" />
+<img width="1149" height="1026" alt="스크린샷 2026-08-09 오전 11 45 23" src="https://github.com/user-attachments/assets/47094357-3e2d-43c9-95d1-6c1acf97c7eb" />
 
 
 ## License
