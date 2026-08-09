@@ -49,10 +49,12 @@ jobs:
           spk=$(find ./dist -name '*.spk' -print -quit)
           test -n "$spk"
           workdir=$(mktemp -d); tar -xf "$spk" -C "$workdir"
+          contents="$workdir/package-contents.txt"
+          tar -tzf "$workdir/package.tgz" > "$contents"
           test "$(grep '^checksum=' "$workdir/INFO" | cut -d'"' -f2)" = "$(md5sum "$workdir/package.tgz" | awk '{print $1}')"
           grep -q '^dsmappname="PeterSuh.ChangePanelSize.AppInstance"$' "$workdir/INFO"
-          tar -tzf "$workdir/package.tgz" | grep -q 'ui/dsm-wrapper.js'
-          tar -tzf "$workdir/package.tgz" | grep -q 'bin/helper/changepanelsize-helper.x86_64'
+          grep -q 'ui/dsm-wrapper.js' "$contents"
+          grep -q 'bin/helper/changepanelsize-helper.x86_64' "$contents"
           grep -q '"tool"' "$workdir/conf/privilege"
           ! grep -q '"run-as"[[:space:]]*:[[:space:]]*"root"' "$workdir/conf/privilege"
       - uses: actions/upload-artifact@v4
