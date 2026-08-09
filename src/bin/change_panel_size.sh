@@ -46,8 +46,7 @@ trap cleanup TERM INT
 
 # ====== setup_storage_script 함수 및 복사 부분 제거 ======
 
-# 스토리지 명령 실행 함수 (sudo 권한으로 실행)
-# /etc/sudoers.d/Changepanelsize 파일 생성은 StoragePanel Addon 설치 시 처리함
+# 스토리지 명령 실행 함수 (DSM privilege 도구로 root 실행)
 execute_storage_command() {
     local args="$*"
     log_message "Executing storage command: ${STORAGE_SCRIPT} ${args}"
@@ -61,15 +60,8 @@ execute_storage_command() {
         chmod +x "${STORAGE_SCRIPT}"
     fi
 
-    # sudoers 파일 존재 여부 체크 (sudo test -f 로 파일존재 확인)
-    # exit code 126: sudoers 미설정 의미
-    if ! sudo test -f /etc/sudoers.d/Changepanelsize > /dev/null 2>&1; then
-        log_message "ERROR: sudoers not configured for /etc/sudoers.d/Changepanelsize"
-        return 126
-    fi
-
-    # sudo 명령 실행 (로그 파일에 출력 및 에러 리다이렉션)
-    if sudo "${STORAGE_SCRIPT}" ${args} >> "${LOG_FILE}" 2>&1; then
+    HELPER="${BIN_DIR}/helper/changepanelsize-helper.x86_64"
+    if "${HELPER}" ${args} >> "${LOG_FILE}" 2>&1; then
         log_message "Storage command executed successfully"
         return 0
     else

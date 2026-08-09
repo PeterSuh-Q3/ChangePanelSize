@@ -5,24 +5,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue)](#license)
 [![issues - ChangePanelSize](https://img.shields.io/github/issues/PeterSuh-Q3/ChangePanelSize)](https://github.com/PeterSuh-Q3/ChangePanelSize/issues)
 
-# < Caution >
-
-ChangePanelSize synology user must be granted the authority to process with sudoers.
-
-Check if the file already exists with the command below, and if not,
-
-sudoers processing as below is absolutely necessary.
-
-```
-sudo -i
-ll /etc/sudoers.d/Changepanelsize
-```
-
-```
-sudo -i
-echo "changepanelsize ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/Changepanelsize
-chmod 0440 /etc/sudoers.d/Changepanelsize
-```
+The package uses a narrowly scoped DSM privilege tool for storage-panel changes; no sudoers configuration is required.
 
 ## License
 

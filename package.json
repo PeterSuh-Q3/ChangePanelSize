@@ -6,7 +6,7 @@
   "target": "./src",
   "install_type": "package",
   "dsmuidir": "ui",
-  "dsmappname": "SYNO.SDS.Changepanelsize",
+  "dsmappname": "PeterSuh.ChangePanelSize.AppInstance",
   "install_dep_packages": "",
   "ctl_stop": "yes",
   "ctl_uninstall": "yes",

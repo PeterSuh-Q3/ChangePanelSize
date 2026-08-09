@@ -113,12 +113,11 @@ log "Request: ACTION=${ACTION}, HDD_BAY=${HDD_BAY}, SSD_BAY=${SSD_BAY}"
 
 # ---------- 5. JSON 응답 함수 -----------------------------------------------
 json_response() {
-    local success="$1" message="$2" data="$3" sudoers_missing="${4:-false}"
+    local success="$1" message="$2" data="$3"
     {
         echo "{"
-        echo "  \"success\": ${success},"
-        echo "  \"message\": \"${message//\"/\\\"}\","
-        echo "  \"sudoers_missing\": ${sudoers_missing}"
+        echo "  \"success\": ${success}"
+        echo "  ,\"message\": \"${message//\"/\\\"}\""
         if [ -n "${data}" ]; then
             echo "  ,${data}"
         fi
