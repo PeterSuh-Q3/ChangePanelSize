@@ -29,4 +29,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: ./build-spk.sh ./dist
-      - run: tar -tf $(find ./dist -name '*.spk' -print -quit) | grep -q '^INFO$'
+      - run: tar -tf $(find ./dist -name '*.spk' -print -quit) | grep -Eq '^(\./)?INFO$'
