@@ -6,9 +6,9 @@ md5_of(){ if command -v md5sum >/dev/null 2>&1; then md5sum "$1" | awk '{print $
 b64_of(){ if base64 --help 2>&1 | grep -q -- '-w,'; then base64 -w 0 < "$1"; else base64 < "$1" | tr -d '\n'; fi; }
 if tar --version 2>/dev/null | grep -qi 'gnu tar'; then TAR_OWNER=(--owner=root --group=root); else TAR_OWNER=(--uid 0 --gid 0 --uname root --gname root); fi
 if [ "$(uname -s)" = "Linux" ]; then
-  gcc -O2 -static -Wall -Wextra -o "$ROOT/src/bin/helper/changepanelsize-helper.x86_64" "$ROOT/synology/helper/changepanelsize-helper.c"
+  gcc -O2 -march=x86-64 -mtune=generic -static -Wall -Wextra -o "$ROOT/src/bin/helper/changepanelsize-helper.x86_64" "$ROOT/synology/helper/changepanelsize-helper.c"
 else
-  gcc -O2 -Wall -Wextra -o "$ROOT/src/bin/helper/changepanelsize-helper.x86_64" "$ROOT/synology/helper/changepanelsize-helper.c"
+  gcc -O2 -march=x86-64 -mtune=generic -Wall -Wextra -o "$ROOT/src/bin/helper/changepanelsize-helper.x86_64" "$ROOT/synology/helper/changepanelsize-helper.c"
 fi
 mkdir -p "$T/target"; cp -R "$ROOT/src/." "$T/target/"; chmod 0755 "$T/target/ui/api.cgi" "$T/target/bin/"*.sh
 mkdir -p "$T/spk"; cp -R "$ROOT/synology/scripts" "$T/spk/scripts"; cp -R "$ROOT/synology/conf" "$T/spk/conf"; cp "$ROOT/synology/"PACKAGE_ICON* "$T/spk/" 2>/dev/null||true; cp "$ROOT/LICENSE" "$T/spk/LICENSE"

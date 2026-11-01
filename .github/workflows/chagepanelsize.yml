@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   prepare:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
     steps:
@@ -38,7 +38,7 @@ jobs:
 
   build-spk:
     needs: prepare
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Build SPK without Synology toolchain

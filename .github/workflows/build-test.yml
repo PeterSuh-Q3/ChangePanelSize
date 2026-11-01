@@ -12,20 +12,20 @@ on:
 
 jobs:
   test-helper:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Compile production helper statically
-        run: gcc -O2 -static -Wall -Wextra -o /tmp/changepanelsize-helper.x86_64 synology/helper/changepanelsize-helper.c
+        run: gcc -O2 -march=x86-64 -mtune=generic -static -Wall -Wextra -o /tmp/changepanelsize-helper.x86_64 synology/helper/changepanelsize-helper.c
       - name: Verify helper rejects invalid arguments
         run: |
-          gcc -O2 -Wall -Wextra -DTARGET='"/usr/bin/id"' -o /tmp/helper-test synology/helper/changepanelsize-helper.c
+          gcc -O2 -march=x86-64 -mtune=generic -Wall -Wextra -DTARGET='"/usr/bin/id"' -o /tmp/helper-test synology/helper/changepanelsize-helper.c
           sudo chown root:root /tmp/helper-test && sudo chmod 6755 /tmp/helper-test
           if sudo -u nobody /tmp/helper-test '--evil'; then exit 1; fi
           sudo -u nobody /tmp/helper-test -u | grep -qx 0
   build-spk:
     needs: test-helper
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - run: ./build-spk.sh ./dist
